@@ -1,13 +1,14 @@
-def find_critical_load(L, E, A, r, c, e, sigma_allow):
-    """
-    L: אורך במ"מ
-    E: מודול אלסטיות ב-MPa
-    A: שטח חתך בממ"ר
-    r: רדיוס אינרציה במ"מ
-    c: מרחק לסיב קיצוני במ"מ
-    e: אקסצנטריות במ"מ
-    sigma_allow: מאמץ מותר ב-MPa
+import numpy as np
+from scipy.optimize import bisect
 
-    Return: העומס P בניוטון (float)
-    """
-    # כתבו כאן את הקוד
+def find_critical_load(L, E, A, r, c, e, sigma_allow):
+    
+    def f(P):
+        theta = (L / (2 * r)) * np.sqrt(P / (E * A))
+        sigma_max = (P / A) * (1 + (e * c / r**2) * (1 / np.cos(theta)))
+        return sigma_max - sigma_allow
+        
+    P_euler = (np.pi**2 * E * A) / ((L / r)**2)
+    P_crit = bisect(f, 0, 0.999 * P_euler)
+    
+    return float(P_crit)
